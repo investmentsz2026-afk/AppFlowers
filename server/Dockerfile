@@ -9,6 +9,9 @@ WORKDIR /app
 
 # Copiamos solo los package.json del backend (capa de caché)
 COPY server/package*.json ./
+# Copiamos el schema.prisma antes de instalar para que los scripts postinstall lo encuentren
+RUN mkdir -p prisma
+COPY ../database/schema.prisma ./prisma/schema.prisma
 # Instalamos **todas** las dependencias, incluidas dev (Prisma 5.x)
 RUN npm install
 

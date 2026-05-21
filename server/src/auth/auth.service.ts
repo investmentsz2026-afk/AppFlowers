@@ -26,9 +26,10 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas. Por favor intente de nuevo.');
     }
 
-    // Retornamos el usuario excluyendo la contraseña
-    const { password: _, ...result } = user;
-    return result;
+    // Log user retrieved (excluding password)
+    const { password: _, ...userInfo } = user;
+    console.log('✅ validateUser success – user:', userInfo);
+    return userInfo;
   }
 
   async login(user: any) {
@@ -39,6 +40,7 @@ export class AuthService {
       role: user.role,
     };
 
+    console.log('🔑 Generating JWT for payload:', payload);
     return {
       accessToken: this.jwtService.sign(payload),
       user: {
