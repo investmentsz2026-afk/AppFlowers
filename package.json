@@ -1,0 +1,26 @@
+{
+  "name": "apkexcel-root",
+  "version": "1.0.0",
+  "description": "Sistema de Control Administrativo ApkExcel - Monorepo Principal",
+  "scripts": {
+    "install:all": "npm run install:database && npm run install:server && npm run install:web",
+    "install:database": "cd database && npm install",
+    "install:server": "cd server && npm install",
+    "install:web": "cd apps/web && npm install",
+    "db:generate": "cd database && npx prisma generate && cd ../server && npm run db:generate",
+    "db:migrate": "cd database && npm run db:migrate",
+    "db:seed": "cd database && npm run db:seed",
+    "dev:server": "cd server && npm run start:dev",
+    "dev:web": "cd apps/web && npm run dev"
+  },
+  "keywords": [
+    "nextjs",
+    "nestjs",
+    "prisma",
+    "postgresql",
+    "cemetery",
+    "management"
+  ],
+  "author": "Antigravity Senior Architect",
+  "license": "ISC"
+}
