@@ -4,6 +4,9 @@
 # ---------- Build stage ----------
 FROM node:20-alpine AS builder
 
+# Instalar OpenSSL que Prisma necesita
+RUN apk add --no-cache openssl
+
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
@@ -11,15 +14,20 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci   # instala dependencias exactamente como en tu lockfile
 
-# Copiamos el resto del código del backend
+# Copiamos todo el código del backend
 COPY . .
 
 # ---------- Prisma generation ----------
 # Necesitamos la variable DATABASE_URL para que Prisma genere el cliente.
-# Puedes definirla en la UI de Render (ver pasos más abajo) o usar un placeholder aquí.
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
-RUN npm run db:generate   # → prisma generate
+
+# Copiamos el schema.prisma desde la carpeta “database” (está en el repo raíz)
+#   → la ruta en el contenedor será ./prisma/schema.prisma
+COPY ../database/schema.prisma ./prisma/schema.prisma
+
+# Generamos el cliente Prisma
+RUN npm run db:generate   # → prisma generate --schema=./prisma/schema.prisma
 
 # ---------- Build the Nest app ----------
 RUN npm run build          # nest build → genera /dist
@@ -29,7 +37,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copiamos sólo lo necesario del stage anterior
+# Copiamos solo lo necesario del stage anterior
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
