@@ -10,8 +10,14 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.validateUser(loginDto);
-    return this.authService.login(user);
+    console.log('Login request payload:', loginDto);
+    try {
+      const user = await this.authService.validateUser(loginDto);
+      return this.authService.login(user);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error; // rethrow to let Nest handle status codes
+    }
   }
 
   @UseGuards(JwtAuthGuard)
