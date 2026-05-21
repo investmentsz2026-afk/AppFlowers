@@ -11,12 +11,12 @@ RUN apk add --no-cache openssl
 WORKDIR /app
 
 # Copiamos solo los package.json del backend (capa de caché)
-COPY package*.json ./
+COPY server/package*.json ./
 # Instalamos **todas** las dependencias, incluidas dev (Prisma 5.x)
 RUN npm install
 
 # Copiamos todo el código del backend
-COPY . .
+COPY server/. .
 
 # ---------- Prisma generation ----------
 # Necesitamos la variable DATABASE_URL para que Prisma genere el cliente.
