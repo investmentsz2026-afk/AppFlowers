@@ -27,7 +27,7 @@ ENV DATABASE_URL=${DATABASE_URL}
 COPY ../database/schema.prisma ./prisma/schema.prisma
 
 # Generamos el cliente Prisma usando la versión local (5.22.0)
-RUN npx prisma generate --schema=./prisma/schema.prisma
+RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
 
 # ---------- Build the Nest app ----------
 RUN npm run build          # nest build → genera /dist
