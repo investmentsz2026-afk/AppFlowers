@@ -5,11 +5,13 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
 }
 
 generator server_client {
   provider = "prisma-client-js"
   output   = "../server/node_modules/.prisma/client"
+  binaryTargets = ["native", "linux-musl"]
 }
 
 enum Role {
