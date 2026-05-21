@@ -12,7 +12,7 @@ WORKDIR /app
 
 # Copiamos solo los package.json (para aprovechar la capa de caché)
 COPY package*.json ./
-RUN npm ci   # instala dependencias exactamente como en tu lockfile
+RUN npm install   # instala dependencias (no necesita lock‑file)
 
 # Copiamos todo el código del backend
 COPY . .
