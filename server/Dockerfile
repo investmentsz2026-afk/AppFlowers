@@ -5,7 +5,7 @@
 FROM node:20-alpine AS builder
 
 # Instalar OpenSSL que Prisma necesita
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl && apk add --no-cache openssl1.1-compat
 
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
