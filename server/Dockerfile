@@ -2,10 +2,7 @@
 #  Dockerfile – backend NestJS (Render)
 # ==============================
 # ---------- Build stage ----------
-FROM node:20-alpine3.16 AS builder
-
-# Instalar OpenSSL que Prisma necesita
-# OpenSSL installation not required for Prisma on Alpine 3.18
+FROM node:20-alpine AS builder
 
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
@@ -33,11 +30,13 @@ RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
 RUN npm run build          # nest build → genera /dist
 
 # ---------- Runtime stage ----------
-FROM node:20-alpine3.16
+FROM node:20-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache openssl libssl1.1 libstdc++ libgcc libc6-compat
+# Instalar dependencias nativas para Prisma (OpenSSL 3.x en Alpine moderno)
+RUN apk add --no-cache openssl libc6-compat
+
 # Copiamos solo lo necesario del stage anterior
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
