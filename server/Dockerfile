@@ -18,10 +18,13 @@ ENV DATABASE_URL=${DATABASE_URL}
 # Instalamos dependencias (incluye scripts para bcrypt)
 # Añadimos herramientas de compilación necesarias para bcrypt
 RUN apk add --no-cache --virtual .gyp python3 make g++
-RUN npm install
-# Eliminamos herramientas de compilación después de la instalación
+# Install dependencies without running postinstall (skip db:push)
+RUN npm install --ignore-scripts
+# Recompile bcrypt native module
+RUN npm rebuild bcrypt --build-from-source
+# Remove build tools
 RUN apk del .gyp
-# Generamos Prisma client (no necesita DB)
+# Generate Prisma client (no DB needed)
 RUN npm run db:generate
 
 # Copiamos todo el código del backend
