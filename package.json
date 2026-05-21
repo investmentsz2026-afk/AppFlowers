@@ -1,3 +1,4 @@
+
 {
   "name": "apkexcel-root",
   "version": "1.0.0",
@@ -11,7 +12,9 @@
     "db:migrate": "cd database && npm run db:migrate",
     "db:seed": "cd database && npm run db:seed",
     "dev:server": "cd server && npm run start:dev",
-    "dev:web": "cd apps/web && npm run dev"
+    "dev:web": "cd apps/web && npm run dev",
+   
+    "vercel-build": "cd apps/web && npm run build"
   },
   "keywords": [
     "nextjs",
