@@ -10,9 +10,10 @@ RUN apk add --no-cache openssl
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiamos solo los package.json (para aprovechar la capa de caché)
+# Copiamos solo los package.json del backend (para aprovechar la capa de caché)
 COPY package*.json ./
-RUN npm install   # instala dependencias (no necesita lock‑file)
+# Instalamos dependencias (incluye dev dependencies, donde está Prisma)
+RUN npm install
 
 # Copiamos todo el código del backend
 COPY . .
@@ -22,11 +23,12 @@ COPY . .
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
 
-# Copiamos el schema.prisma desde la carpeta “database”
+# Copiamos el schema.prisma desde la carpeta raíz del monorepo
+# (el contexto de Build en Render es la raíz del repo)
 COPY ../database/schema.prisma ./prisma/schema.prisma
 
-# Generamos el cliente Prisma (usando la versión pinneada en package.json)
-RUN npm run db:generate   # → prisma@5.22.0 generate --schema=./prisma/schema.prisma
+# Generamos el cliente Prisma usando la versión local (5.22.0)
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
 # ---------- Build the Nest app ----------
 RUN npm run build          # nest build → genera /dist

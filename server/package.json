@@ -13,7 +13,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "db:generate": "prisma@5.22.0 generate --schema=../database/schema.prisma"
+    "db:generate": "prisma generate --schema=./prisma/schema.prisma"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.3",
