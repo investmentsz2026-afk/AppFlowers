@@ -12,19 +12,21 @@ COPY server/package*.json ./
 # Copiamos el schema.prisma antes de instalar para que los scripts postinstall lo encuentren
 RUN mkdir -p prisma
 COPY ../database/schema.prisma ./prisma/schema.prisma
-# Instalamos **todas** las dependencias, incluidas dev (Prisma 5.x)
-RUN npm install
+# Definimos variable de entorno para Prisma (se sobrescribirá en Render)
+ARG DATABASE_URL=postgresql://postgres:postgres@localhost:5432/apkexcel
+ENV DATABASE_URL=${DATABASE_URL}
+# Instalamos dependencias sin ejecutar scripts postinstall (evita db:push en build)
+RUN npm install --ignore-scripts
+# Generamos Prisma client (no necesita DB)
+RUN npm run db:generate
 
 # Copiamos todo el código del backend
 COPY server/. .
 
 # ---------- Prisma generation ----------
-# Necesitamos la variable DATABASE_URL para que Prisma genere el cliente.
-ARG DATABASE_URL
-ENV DATABASE_URL=${DATABASE_URL}
+# (Removed duplicate DATABASE_URL definition; already set earlier)
 
-# Copiamos el schema.prisma desde la carpeta raíz del monorepo
-COPY ../database/schema.prisma ./prisma/schema.prisma
+# (Removed duplicate schema copy – already handled in build stage)
 
 # Generamos el cliente Prisma usando la versión local (5.22.0)
 RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
@@ -44,9 +46,11 @@ RUN apk add --no-cache openssl libc6-compat
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
+# Copiamos el esquema Prisma para poder hacer db:push en tiempo de ejecución
+COPY --from=builder /app/prisma ./prisma
 
 # Puerto que escuchará la aplicación (igual que en .env.production)
 EXPOSE 4000
 
 # Lanzamos la API
-CMD ["node", "dist/main"]
+CMD ["sh", "-c", "npm run db:push && node dist/main"]
