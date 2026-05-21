@@ -10,9 +10,9 @@ RUN apk add --no-cache openssl
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiamos solo los package.json del backend (para aprovechar la capa de caché)
+# Copiamos solo los package.json del backend (capa de caché)
 COPY package*.json ./
-# Instalamos dependencias (incluye dev dependencies, donde está Prisma)
+# Instalamos **todas** las dependencias, incluidas dev (Prisma 5.x)
 RUN npm install
 
 # Copiamos todo el código del backend
@@ -24,7 +24,6 @@ ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
 
 # Copiamos el schema.prisma desde la carpeta raíz del monorepo
-# (el contexto de Build en Render es la raíz del repo)
 COPY ../database/schema.prisma ./prisma/schema.prisma
 
 # Generamos el cliente Prisma usando la versión local (5.22.0)
