@@ -15,8 +15,12 @@ COPY ../database/schema.prisma ./prisma/schema.prisma
 # Definimos variable de entorno para Prisma (se sobrescribirá en Render)
 ARG DATABASE_URL=postgresql://postgres:postgres@localhost:5432/apkexcel
 ENV DATABASE_URL=${DATABASE_URL}
-# Instalamos dependencias sin ejecutar scripts postinstall (evita db:push en build)
-RUN npm install --ignore-scripts
+# Instalamos dependencias (incluye scripts para bcrypt)
+# Añadimos herramientas de compilación necesarias para bcrypt
+RUN apk add --no-cache --virtual .gyp python3 make g++
+RUN npm install
+# Eliminamos herramientas de compilación después de la instalación
+RUN apk del .gyp
 # Generamos Prisma client (no necesita DB)
 RUN npm run db:generate
 
