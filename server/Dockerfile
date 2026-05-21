@@ -37,6 +37,7 @@ FROM node:20-alpine3.16
 
 WORKDIR /app
 
+RUN apk add --no-cache libssl1.1
 # Copiamos solo lo necesario del stage anterior
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
