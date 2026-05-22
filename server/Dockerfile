@@ -7,6 +7,9 @@ FROM node:20-alpine AS builder
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
+# Instalar dependencias nativas para Prisma en la etapa de construcción para detectar la versión de OpenSSL correcta
+RUN apk add --no-cache openssl libc6-compat
+
 # Copiamos solo los package.json del backend (capa de caché)
 COPY server/package*.json ./
 # Copiamos el schema.prisma antes de instalar para que los scripts postinstall lo encuentren
@@ -41,6 +44,9 @@ COPY server/. .
 # Generamos el cliente Prisma usando la versión local (5.22.0)
 RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
 
+# Compilamos la semilla de TypeScript a JavaScript para evitar la sobrecarga de ts-node en producción (512MB RAM)
+RUN ./node_modules/.bin/tsc database/seed.ts --outDir database --module commonjs --target es2021 --skipLibCheck
+
 # ---------- Build the Nest app ----------
 RUN npm run build          # nest build → genera /dist
 
@@ -65,4 +71,4 @@ COPY --from=builder /app/database ./database
 EXPOSE 4000
 
 # Lanzamos la API
-CMD ["sh", "-c", "npm run db:push && npm run seed && node dist/main"]
+CMD ["sh", "-c", "npm run db:push && node database/seed.js && node dist/main"]
