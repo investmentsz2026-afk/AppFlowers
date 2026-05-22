@@ -11,7 +11,10 @@ WORKDIR /app
 COPY server/package*.json ./
 # Copiamos el schema.prisma antes de instalar para que los scripts postinstall lo encuentren
 RUN mkdir -p prisma
-COPY ../database/schema.prisma ./prisma/schema.prisma
+COPY database/schema.prisma ./prisma/schema.prisma
+# Copiamos el archivo de semilla de la base de datos
+RUN mkdir -p database
+COPY database/seed.ts ./database/seed.ts
 # Definimos variable de entorno para Prisma (se sobrescribirá en Render)
 ARG DATABASE_URL=postgresql://postgres:postgres@localhost:5432/apkexcel
 ENV DATABASE_URL=${DATABASE_URL}
@@ -55,9 +58,11 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 # Copiamos el esquema Prisma para poder hacer db:push en tiempo de ejecución
 COPY --from=builder /app/prisma ./prisma
+# Copiamos la semilla de la base de datos
+COPY --from=builder /app/database ./database
 
 # Puerto que escuchará la aplicación (igual que en .env.production)
 EXPOSE 4000
 
 # Lanzamos la API
-CMD ["sh", "-c", "npm run db:push && node dist/main"]
+CMD ["sh", "-c", "npm run db:push && npm run seed && node dist/main"]
