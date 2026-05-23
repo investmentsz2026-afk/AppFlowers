@@ -345,29 +345,29 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            {/* Grid de Resumen Estadístico */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5 print:grid-cols-5">
-              <div className="rounded-2xl border border-border bg-card p-4 text-center print:border-foreground/30">
+            {/* Grid de Resumen Estadístico (Oculto en Impresión) */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5 print:hidden">
+              <div className="rounded-2xl border border-border bg-card p-4 text-center">
                 <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Total Clientes</p>
                 <p className="text-2xl font-extrabold mt-1 text-foreground">{reportData.summary.totalClients}</p>
               </div>
-              <div className="rounded-2xl border border-border bg-card p-4 text-center print:border-foreground/30">
+              <div className="rounded-2xl border border-border bg-card p-4 text-center">
                 <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Monto Estimado</p>
                 <p className="text-2xl font-extrabold mt-1 text-emerald-500 font-mono">S/. {reportData.summary.totalRevenue.toFixed(2)}</p>
               </div>
-              <div className="rounded-2xl border border-border bg-card p-4 text-center print:border-foreground/30">
+              <div className="rounded-2xl border border-border bg-card p-4 text-center">
                 <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wide flex items-center justify-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Activos
                 </p>
                 <p className="text-2xl font-extrabold mt-1 text-foreground">{reportData.summary.activeCount}</p>
               </div>
-              <div className="rounded-2xl border border-border bg-card p-4 text-center print:border-foreground/30">
+              <div className="rounded-2xl border border-border bg-card p-4 text-center">
                 <p className="text-[10px] font-bold text-amber-500 uppercase tracking-wide flex items-center justify-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span> Próximos
                 </p>
                 <p className="text-2xl font-extrabold mt-1 text-foreground">{reportData.summary.pendingCount}</p>
               </div>
-              <div className="rounded-2xl border border-border bg-card p-4 text-center col-span-2 sm:col-span-1 print:border-foreground/30">
+              <div className="rounded-2xl border border-border bg-card p-4 text-center col-span-2 sm:col-span-1">
                 <p className="text-[10px] font-bold text-red-500 uppercase tracking-wide flex items-center justify-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span> Vencidos
                 </p>
@@ -386,41 +386,41 @@ export default function ReportsPage() {
                   <table className="w-full text-left border-collapse min-w-[1000px] print:min-w-full">
                     <thead>
                       <tr className="bg-secondary/40 text-[10px] font-extrabold uppercase tracking-wider text-gray-500 border-b border-border print:bg-gray-100 print:text-black">
-                        <th className="px-3 py-3">DNI</th>
-                        <th className="px-3 py-3">Nombre Difunto</th>
-                        <th className="px-3 py-3">Responsable (Contacto)</th>
-                        <th className="px-3 py-3">Teléfono</th>
-                        <th className="px-3 py-3">Sector</th>
-                        <th className="px-3 py-3">Ubicación</th>
-                        <th className="px-3 py-3">Flores</th>
-                        <th className="px-3 py-3">Monto</th>
-                        <th className="px-3 py-3">F. Inicio</th>
-                        <th className="px-3 py-3 font-bold text-red-500 print:text-black">F. Venc.</th>
-                        <th className="px-3 py-3 text-center print:text-right">Estado</th>
+                        <th className="px-3 py-3 print:px-1 print:py-1 print:text-[8px] print:leading-none">DNI</th>
+                        <th className="px-3 py-3 print:px-1 print:py-1 print:text-[8px] print:leading-none">Nombre Difunto</th>
+                        <th className="px-3 py-3 print:px-1 print:py-1 print:text-[8px] print:leading-none">Responsable (Contacto)</th>
+                        <th className="px-3 py-3 print:px-1 print:py-1 print:text-[8px] print:leading-none">Teléfono</th>
+                        <th className="px-3 py-3 print:px-1 print:py-1 print:text-[8px] print:leading-none">Sector</th>
+                        <th className="px-3 py-3 print:px-1 print:py-1 print:text-[8px] print:leading-none">Ubicación</th>
+                        <th className="px-3 py-3 print:px-1 print:py-1 print:text-[8px] print:leading-none">Flores</th>
+                        <th className="px-3 py-3 print:px-1 print:py-1 print:text-[8px] print:leading-none">Monto</th>
+                        <th className="px-3 py-3 print:px-1 print:py-1 print:text-[8px] print:leading-none">F. Inicio</th>
+                        <th className="px-3 py-3 font-bold text-red-500 print:text-black print:px-1 print:py-1 print:text-[8px] print:leading-none">F. Venc.</th>
+                        <th className="px-3 py-3 text-center print:text-right print:px-1 print:py-1 print:text-[8px] print:leading-none">Estado</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border text-xs print:divide-gray-400">
                       {reportData.clients.map((c: any) => (
                         <tr key={c.id} className="hover:bg-secondary/15 transition-colors print:hover:bg-transparent">
-                          <td className="px-3 py-2.5 font-mono text-gray-500 print:text-black">{c.dni}</td>
-                          <td className="px-3 py-2.5 font-bold text-foreground print:text-black">{c.fullName}</td>
-                          <td className="px-3 py-2.5 text-gray-600 print:text-black">{c.contactName || '-'}</td>
-                          <td className="px-3 py-2.5 text-gray-500 font-mono print:text-black">{c.phone || '-'}</td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2.5 font-mono text-gray-500 print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">{c.dni}</td>
+                          <td className="px-3 py-2.5 font-bold text-foreground print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">{c.fullName}</td>
+                          <td className="px-3 py-2.5 text-gray-600 print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">{c.contactName || '-'}</td>
+                          <td className="px-3 py-2.5 text-gray-500 font-mono print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">{c.phone || '-'}</td>
+                          <td className="px-3 py-2.5 print:px-1 print:py-0.5 print:text-[8px] print:leading-none">
                             <span className="font-semibold text-primary dark:text-blue-400 print:text-black">
                               {c.sector?.name || 'N/A'}
                             </span>
                           </td>
-                          <td className="px-3 py-2.5 font-mono text-gray-600 print:text-black">{c.address || '-'}</td>
-                          <td className="px-3 py-2.5 text-gray-500 italic print:text-black">{c.flowers || '-'}</td>
-                          <td className="px-3 py-2.5 font-bold text-emerald-500 font-mono print:text-black">S/. {c.amount ? c.amount.toFixed(2) : '0.00'}</td>
-                          <td className="px-3 py-2.5 text-gray-500 font-mono print:text-black">
+                          <td className="px-3 py-2.5 font-mono text-gray-600 print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">{c.address || '-'}</td>
+                          <td className="px-3 py-2.5 text-gray-500 italic print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">{c.flowers || '-'}</td>
+                          <td className="px-3 py-2.5 font-bold text-emerald-500 font-mono print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">S/. {c.amount ? c.amount.toFixed(2) : '0.00'}</td>
+                          <td className="px-3 py-2.5 text-gray-500 font-mono print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">
                             {c.lastPaymentDate ? new Date(c.lastPaymentDate).toLocaleDateString('es-PE') : 'N/A'}
                           </td>
-                          <td className="px-3 py-2.5 font-bold font-mono text-gray-700 dark:text-gray-300 print:text-black">
+                          <td className="px-3 py-2.5 font-bold font-mono text-gray-700 dark:text-gray-300 print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">
                             {c.nextDueDate ? new Date(c.nextDueDate).toLocaleDateString('es-PE') : 'N/A'}
                           </td>
-                          <td className="px-3 py-2.5 text-center print:text-right print:font-bold">
+                          <td className="px-3 py-2.5 text-center print:text-right print:font-bold print:px-1 print:py-0.5 print:text-[8px] print:leading-none">
                             <span className="print:hidden">
                               {getStatusBadge(c.status)}
                             </span>
