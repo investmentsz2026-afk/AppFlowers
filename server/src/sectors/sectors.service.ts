@@ -104,21 +104,10 @@ export class SectorsService {
   async remove(id: string) {
     const sector = await this.prisma.sector.findUnique({
       where: { id },
-      include: {
-        _count: {
-          select: { clients: true },
-        },
-      },
     });
 
     if (!sector) {
       throw new NotFoundException(`El sector solicitado no existe.`);
-    }
-
-    if (sector._count.clients > 0) {
-      throw new BadRequestException(
-        `No se puede eliminar el '${sector.name}' porque tiene ${sector._count.clients} clientes asignados. Por favor, reasigne o elimine a los clientes primero.`,
-      );
     }
 
     return this.prisma.sector.delete({

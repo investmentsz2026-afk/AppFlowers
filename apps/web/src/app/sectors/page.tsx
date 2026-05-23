@@ -8,6 +8,7 @@ import {
   Plus, 
   Layers, 
   Trash2, 
+  Pencil,
   Users, 
   X, 
   CheckCircle2, 
@@ -23,8 +24,10 @@ export default function SectorsPage() {
   // 1. Estados de Modales y Detalles
   const [sectorModalOpen, setSectorModalOpen] = useState(false);
   const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editSectorId, setEditSectorId] = useState<string | null>(null);
 
-  // Formulario Local - Crear Sector
+  // Formulario Local - Crear/Editar Sector
   const [sectorForm, setSectorForm] = useState({
     name: '',
     totalCapacity: 50,
@@ -70,6 +73,30 @@ export default function SectorsPage() {
     },
   });
 
+  // Mutation: Editar Sector
+  const updateMutation = useMutation({
+    mutationFn: async (data: { id: string; name: string; totalCapacity: number }) => {
+      return api.patch(`/sectors/${data.id}`, {
+        name: data.name,
+        totalCapacity: data.totalCapacity,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sectorsList'] });
+      if (selectedSectorId === editSectorId) {
+        queryClient.invalidateQueries({ queryKey: ['sectorDetail', editSectorId] });
+      }
+      setSectorModalOpen(false);
+      setSectorForm({ name: '', totalCapacity: 50 });
+      setFormError(null);
+      setIsEditing(false);
+      setEditSectorId(null);
+    },
+    onError: (err: any) => {
+      setFormError(err.response?.data?.message || 'Error al editar sector.');
+    },
+  });
+
   // Mutation: Eliminar Sector
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -84,6 +111,24 @@ export default function SectorsPage() {
     },
   });
 
+  // Abrir Modal para crear
+  const handleOpenCreateModal = () => {
+    setIsEditing(false);
+    setEditSectorId(null);
+    setSectorForm({ name: '', totalCapacity: 50 });
+    setFormError(null);
+    setSectorModalOpen(true);
+  };
+
+  // Abrir Modal para editar
+  const handleOpenEditModal = (sector: any) => {
+    setIsEditing(true);
+    setEditSectorId(sector.id);
+    setSectorForm({ name: sector.name, totalCapacity: sector.totalCapacity });
+    setFormError(null);
+    setSectorModalOpen(true);
+  };
+
   // Gestores de eventos
   const handleSaveSector = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,14 +139,26 @@ export default function SectorsPage() {
       return;
     }
 
-    createMutation.mutate({
-      name: sectorForm.name,
-      totalCapacity: parseInt(sectorForm.totalCapacity.toString(), 10),
-    });
+    if (isEditing && editSectorId) {
+      updateMutation.mutate({
+        id: editSectorId,
+        name: sectorForm.name,
+        totalCapacity: parseInt(sectorForm.totalCapacity.toString(), 10),
+      });
+    } else {
+      createMutation.mutate({
+        name: sectorForm.name,
+        totalCapacity: parseInt(sectorForm.totalCapacity.toString(), 10),
+      });
+    }
   };
 
   const handleDeleteSector = (sector: any) => {
-    if (window.confirm(`¿Está seguro de eliminar el ${sector.name}? Esta acción no se puede deshacer.`)) {
+    const message = sector.occupied > 0
+      ? `¿Está seguro de eliminar el ${sector.name}? Tiene ${sector.occupied} clientes asignados que quedarán sin sector físico. Esta acción no se puede deshacer.`
+      : `¿Está seguro de eliminar el ${sector.name}? Esta acción no se puede deshacer.`;
+
+    if (window.confirm(message)) {
       deleteMutation.mutate(sector.id);
     }
   };
@@ -141,7 +198,7 @@ export default function SectorsPage() {
             </p>
           </div>
           <button
-            onClick={() => setSectorModalOpen(true)}
+            onClick={handleOpenCreateModal}
             className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
           >
             <Plus className="h-5 w-5" />
@@ -198,16 +255,25 @@ export default function SectorsPage() {
                         </div>
                       </div>
                       
-                      {/* Botón Borrar Sector (sólo si no tiene clientes asignados) */}
-                      {sec.occupied === 0 && (
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        {/* Botón Editar Sector */}
+                        <button
+                          onClick={() => handleOpenEditModal(sec)}
+                          className="text-gray-400 hover:text-primary rounded-lg p-1 sm:p-1.5 hover:bg-primary/10 transition-colors"
+                          title="Editar Sector"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        
+                        {/* Botón Borrar Sector */}
                         <button
                           onClick={() => handleDeleteSector(sec)}
-                          className="text-gray-400 hover:text-red-500 rounded-lg p-1 sm:p-1.5 hover:bg-red-500/10 transition-colors shrink-0"
-                          title="Eliminar Sector Vacío"
+                          className="text-gray-400 hover:text-red-500 rounded-lg p-1 sm:p-1.5 hover:bg-red-500/10 transition-colors"
+                          title="Eliminar Sector"
                         >
-                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
-                      )}
+                      </div>
                     </div>
 
                     {/* Fila intermedia: Progreso */}
@@ -349,7 +415,7 @@ export default function SectorsPage() {
 
               <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2 shrink-0">
                 <Layers className="h-5 w-5 text-primary" />
-                Registrar Nuevo Sector
+                {isEditing ? 'Editar Sector' : 'Registrar Nuevo Sector'}
               </h3>
 
               <form onSubmit={handleSaveSector} className="flex-1 flex flex-col min-h-0">
@@ -399,10 +465,13 @@ export default function SectorsPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={createMutation.isPending}
+                    disabled={createMutation.isPending || updateMutation.isPending}
                     className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-md hover:opacity-90 active:scale-95 disabled:opacity-60"
                   >
-                    {createMutation.isPending ? 'Creando...' : 'Confirmar Crear'}
+                    {isEditing 
+                      ? (updateMutation.isPending ? 'Guardando...' : 'Confirmar Cambios') 
+                      : (createMutation.isPending ? 'Creando...' : 'Confirmar Crear')
+                    }
                   </button>
                 </div>
               </form>
