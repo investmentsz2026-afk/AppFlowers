@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Req, BadRequestException } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
@@ -13,6 +13,33 @@ export class ClientsController {
   @Post()
   create(@Body() createClientDto: CreateClientDto, @Req() req: any) {
     return this.clientsService.create(createClientDto, req.user.id);
+  }
+
+  @Post('bulk')
+  bulkCreate(@Body() body: any[], @Req() req: any) {
+    if (!Array.isArray(body)) {
+      throw new BadRequestException('El cuerpo de la petición debe ser un arreglo de clientes');
+    }
+    return this.clientsService.bulkCreate(body, req.user.id);
+  }
+
+  @Get('reports')
+  getReports(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('dateType') dateType?: 'nextDueDate' | 'lastPaymentDate' | 'createdAt',
+    @Query('status') status?: string,
+    @Query('sectorIds') sectorIds?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.clientsService.getReports({
+      startDate,
+      endDate,
+      dateType,
+      status,
+      sectorIds,
+      search,
+    });
   }
 
   @Get()

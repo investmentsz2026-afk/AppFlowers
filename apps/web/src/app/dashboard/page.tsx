@@ -163,7 +163,7 @@ export default function DashboardPage() {
                       <span className="text-sm font-semibold text-foreground">{client.fullName}</span>
                       <div className="flex items-center gap-3 text-xs text-gray-500">
                         <span className="flex items-center gap-1 font-medium text-gray-600 dark:text-gray-400">
-                          <Layers className="h-3.5 w-3.5 text-primary" /> {client.sector.name}
+                          <Layers className="h-3.5 w-3.5 text-primary" /> {client.sector?.name || 'Sin Sector'}
                         </span>
                         <span className="flex items-center gap-1">
                           <Phone className="h-3.5 w-3.5" /> {client.phone}

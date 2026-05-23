@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as XLSX from 'xlsx';
 import { api } from '../../services/api';
 import { DashboardLayout } from '../../components/DashboardLayout';
 import { 
@@ -18,7 +19,9 @@ import {
   ChevronRight, 
   X,
   UserPlus,
-  Coins
+  Coins,
+  FileSpreadsheet,
+  Upload
 } from 'lucide-react';
 
 export default function ClientsPage() {
@@ -37,6 +40,12 @@ export default function ClientsPage() {
   
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentClient, setPaymentClient] = useState<any | null>(null);
+
+  // C. Estados para Importación Masiva
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<any | null>(null);
 
   // A. Formularios Locales - Crear/Editar Cliente
   const [clientForm, setClientForm] = useState({
@@ -138,6 +147,106 @@ export default function ClientsPage() {
     },
   });
 
+  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setImportFile(e.target.files[0]);
+      setImportResult(null);
+      setFormError(null);
+    }
+  };
+
+  const handleProcessImport = async () => {
+    if (!importFile) return;
+    setImporting(true);
+    setFormError(null);
+    setImportResult(null);
+
+    try {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        try {
+          const data = e.target?.result;
+          let parsedData: any[] = [];
+
+          if (importFile.name.endsWith('.csv')) {
+            const text = data as string;
+            const lines = text.split('\n');
+            if (lines.length <= 1) throw new Error('El archivo CSV está vacío.');
+
+            const headerLine = lines[0];
+            const separator = headerLine.includes(';') ? ';' : ',';
+            const headers = headerLine.split(separator).map(h => h.trim().replace(/^["']|["']$/g, ''));
+
+            for (let i = 1; i < lines.length; i++) {
+              const line = lines[i].trim();
+              if (!line) continue;
+              const values = line.split(separator).map(v => v.trim().replace(/^["']|["']$/g, ''));
+              
+              const row: any = {};
+              headers.forEach((header, index) => {
+                row[header] = values[index] || '';
+              });
+              parsedData.push(row);
+            }
+          } else {
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            parsedData = XLSX.utils.sheet_to_json(sheet);
+          }
+
+          if (parsedData.length === 0) {
+            throw new Error('No se encontraron registros válidos en el archivo.');
+          }
+
+          // Normalizar columnas en español a campos esperados
+          const normalizedData = parsedData.map(row => {
+            const findValue = (keys: string[]) => {
+              const foundKey = Object.keys(row).find(k => 
+                keys.some(key => k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(key.toLowerCase()))
+              );
+              return foundKey ? row[foundKey] : undefined;
+            };
+
+            return {
+              fullName: findValue(['fullName', 'nombre completo', 'difunto', 'nombre']),
+              dni: findValue(['dni', 'documento', 'identidad']),
+              contactName: findValue(['contactName', 'contacto', 'familiar', 'responsable']),
+              phone: findValue(['phone', 'telefono', 'celular']),
+              address: findValue(['address', 'direccion', 'ubicacion', 'parcela', 'nicho']),
+              flowers: findValue(['flowers', 'flores', 'arreglo']),
+              amount: parseFloat(findValue(['amount', 'monto', 'precio', 'mensualidad', 'pago'])?.toString() || '0') || undefined,
+              remarks: findValue(['remarks', 'observaciones', 'notas', 'comentarios']),
+              sectorName: findValue(['sectorName', 'sector', 'zona']),
+              lastPaymentDate: findValue(['lastPaymentDate', 'inicio', 'fecha inicio', 'ultimo pago']),
+              nextDueDate: findValue(['nextDueDate', 'vencimiento', 'fecha vencimiento', 'limite']),
+            };
+          });
+
+          const response = await api.post('/clients/bulk', normalizedData);
+          setImportResult(response.data);
+          
+          queryClient.invalidateQueries({ queryKey: ['clientsList'] });
+          queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+        } catch (err: any) {
+          setFormError(err.response?.data?.message || err.message || 'Error al procesar el archivo. Verifique el formato.');
+        } finally {
+          setImporting(false);
+        }
+      };
+
+      if (importFile.name.endsWith('.csv')) {
+        reader.readAsText(importFile, 'UTF-8');
+      } else {
+        reader.readAsBinaryString(importFile);
+      }
+    } catch (err: any) {
+      setFormError('No se pudo leer el archivo.');
+      setImporting(false);
+    }
+  };
+
   // Helpers de formularios
   const resetClientForm = () => {
     setClientForm({
@@ -193,13 +302,18 @@ export default function ClientsPage() {
     setFormError(null);
     
     // Validaciones básicas
-    if (!clientForm.fullName || !clientForm.dni || !clientForm.phone || !clientForm.address || !clientForm.sectorId || !clientForm.lastPaymentDate || !clientForm.nextDueDate) {
-      setFormError('Por favor complete todos los campos obligatorios (*), incluyendo las fechas de inicio y vencimiento.');
+    if (!clientForm.fullName || !clientForm.dni) {
+      setFormError('Por favor ingrese al menos el Nombre completo y el DNI.');
       return;
     }
 
     const payload: any = { 
       ...clientForm,
+      phone: clientForm.phone ? clientForm.phone.trim() : undefined,
+      address: clientForm.address ? clientForm.address.trim() : undefined,
+      sectorId: clientForm.sectorId || undefined,
+      lastPaymentDate: clientForm.lastPaymentDate || undefined,
+      nextDueDate: clientForm.nextDueDate || undefined,
       amount: parseFloat(clientForm.amount.toString()) || 0.0
     };
 
@@ -262,13 +376,28 @@ export default function ClientsPage() {
               Administra el padrón de clientes, ubicaciones y vigencias de servicios.
             </p>
           </div>
-          <button
-            onClick={handleOpenCreateModal}
-            className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
-          >
-            <UserPlus className="h-5 w-5" />
-            Nuevo Cliente
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => {
+                setImportFile(null);
+                setImportResult(null);
+                setFormError(null);
+                setImportModalOpen(true);
+              }}
+              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card hover:bg-secondary px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 active:scale-95"
+            >
+              <FileSpreadsheet className="h-5 w-5 text-emerald-500" />
+              <span className="hidden sm:inline">Importar Excel/CSV</span>
+              <span className="sm:hidden">Importar</span>
+            </button>
+            <button
+              onClick={handleOpenCreateModal}
+              className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
+            >
+              <UserPlus className="h-5 w-5" />
+              Nuevo Cliente
+            </button>
+          </div>
         </div>
 
         {/* 1. SECCIÓN DE FILTROS */}
@@ -637,10 +766,9 @@ export default function ClientsPage() {
 
                         {/* Teléfono */}
                         <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Teléfono *</label>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Teléfono</label>
                           <input
                             type="text"
-                            required
                             value={clientForm.phone}
                             onChange={(e) => setClientForm(prev => ({ ...prev, phone: e.target.value }))}
                             placeholder="Ej. 997125631"
@@ -652,12 +780,13 @@ export default function ClientsPage() {
                       <div className="grid grid-cols-2 gap-3">
                         {/* Sector */}
                         <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Sector Físico *</label>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Sector Físico</label>
                           <select
                             value={clientForm.sectorId}
                             onChange={(e) => setClientForm(prev => ({ ...prev, sectorId: e.target.value }))}
-                            className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer cursor-pointer"
+                            className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer"
                           >
+                            <option value="">Ninguno / Sin Sector</option>
                             {sectors.map((sec: any) => (
                               <option key={sec.id} value={sec.id}>
                                 {sec.name} (Disp: {sec.available})
@@ -668,10 +797,9 @@ export default function ClientsPage() {
 
                         {/* Ubicación */}
                         <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Ubicación (Parcela/Nicho) *</label>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Ubicación (Parcela/Nicho)</label>
                           <input
                             type="text"
-                            required
                             value={clientForm.address}
                             onChange={(e) => setClientForm(prev => ({ ...prev, address: e.target.value }))}
                             placeholder="Ej. N:FO20-03"
@@ -730,10 +858,9 @@ export default function ClientsPage() {
                       <div className="grid grid-cols-2 gap-3">
                         {/* Fecha Inicio */}
                         <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Fecha de Inicio *</label>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Fecha de Inicio</label>
                           <input
                             type="date"
-                            required
                             value={clientForm.lastPaymentDate}
                             onChange={(e) => setClientForm(prev => ({ ...prev, lastPaymentDate: e.target.value }))}
                             className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none cursor-pointer focus:border-primary focus:ring-1 focus:ring-primary font-mono text-gray-700 dark:text-gray-300"
@@ -742,10 +869,9 @@ export default function ClientsPage() {
 
                         {/* Fecha Vencimiento */}
                         <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Fecha Vencimiento *</label>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Fecha Vencimiento</label>
                           <input
                             type="date"
-                            required
                             value={clientForm.nextDueDate}
                             onChange={(e) => setClientForm(prev => ({ ...prev, nextDueDate: e.target.value }))}
                             className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none cursor-pointer focus:border-primary focus:ring-1 focus:ring-primary font-mono text-gray-700 dark:text-gray-300"
@@ -906,6 +1032,142 @@ export default function ClientsPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* 5. MODAL: IMPORTACIÓN MASIVA */}
+        {importModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !importing && setImportModalOpen(false)} />
+            <div className="relative w-full max-w-xl max-h-[95vh] rounded-2xl border border-border bg-card p-6 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
+              <button
+                disabled={importing}
+                onClick={() => setImportModalOpen(false)}
+                className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-secondary disabled:opacity-40 focus:outline-none"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <h3 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2 shrink-0">
+                <FileSpreadsheet className="h-6 w-6 text-emerald-500" />
+                Importar Clientes Masivamente
+              </h3>
+              <p className="text-xs text-gray-500 mb-4 shrink-0">
+                Carga múltiples clientes desde un archivo Excel (`.xlsx`, `.xls`) o archivo separado por comas (`.csv`).
+              </p>
+
+              <div className="flex-1 overflow-y-auto pr-1 space-y-4 scrollbar-thin text-xs">
+                {/* Instrucciones del formato */}
+                <div className="rounded-xl bg-secondary/50 p-4 space-y-2 text-gray-600 dark:text-gray-300">
+                  <p className="font-bold text-foreground">Formato de Columnas Admitido:</p>
+                  <p>La aplicación asocia de forma inteligente las siguientes columnas (mayúsculas, minúsculas o tildes):</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li><strong className="text-foreground">Nombre completo / Difunto:</strong> Nombre del difunto (Obligatorio)</li>
+                    <li><strong className="text-foreground">DNI:</strong> Documento nacional de identidad - 8 dígitos (Obligatorio)</li>
+                    <li><strong className="text-foreground">Contacto / Pariente:</strong> Nombre del responsable de los pagos (Opcional)</li>
+                    <li><strong className="text-foreground">Teléfono:</strong> Teléfono de contacto (Opcional)</li>
+                    <li><strong className="text-foreground">Dirección / Ubicación / Parcela:</strong> Ubicación física (Opcional)</li>
+                    <li><strong className="text-foreground">Sector / Zona:</strong> Nombre del sector (Opcional, se creará si no existe)</li>
+                    <li><strong className="text-foreground">Flores:</strong> Tipo de flores o arreglo (Opcional)</li>
+                    <li><strong className="text-foreground">Monto:</strong> Costo del servicio (Opcional, por defecto 0.0)</li>
+                    <li><strong className="text-foreground">Inicio / Fecha Inicio:</strong> Fecha del último pago (AAAA-MM-DD, Opcional)</li>
+                    <li><strong className="text-foreground">Vencimiento / Límite:</strong> Fecha de vencimiento (AAAA-MM-DD, Opcional)</li>
+                  </ul>
+                </div>
+
+                {/* Subir archivo */}
+                {!importResult && (
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Seleccionar Archivo</label>
+                    <div className="flex items-center justify-center w-full">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-border border-dashed rounded-xl cursor-pointer bg-background hover:bg-secondary/20 transition-colors">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                          <p className="mb-1 text-sm font-semibold text-gray-500 text-center px-4">
+                            {importFile ? importFile.name : 'Haz clic para subir o arrastra'}
+                          </p>
+                          <p className="text-[10px] text-gray-400 text-center">Excel (.xlsx, .xls) o CSV (.csv)</p>
+                        </div>
+                        <input
+                          type="file"
+                          accept=".xlsx,.xls,.csv"
+                          onChange={handleImportFileChange}
+                          className="hidden"
+                          disabled={importing}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Resultados del procesamiento */}
+                {importResult && (
+                  <div className="rounded-xl border border-border p-4 space-y-3 bg-secondary/20">
+                    <h4 className="font-bold text-sm text-foreground">Resultado de la Importación:</h4>
+                    <div className="grid grid-cols-2 gap-3 text-center">
+                      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-2.5">
+                        <p className="text-[20px] font-bold text-emerald-500">{importResult.successCount}</p>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase">Exitosos</p>
+                      </div>
+                      <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-2.5">
+                        <p className="text-[20px] font-bold text-red-500">{importResult.failedCount}</p>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase">Fallidos</p>
+                      </div>
+                    </div>
+
+                    {importResult.errors.length > 0 && (
+                      <div className="space-y-1.5 mt-2">
+                        <p className="font-bold text-[11px] text-red-500">Listado de Errores encontrados:</p>
+                        <div className="max-h-40 overflow-y-auto border border-border rounded-lg bg-card divide-y divide-border p-2 space-y-1 scrollbar-thin">
+                          {importResult.errors.map((err: any, idx: number) => (
+                            <div key={idx} className="text-[10px] py-1 flex items-start gap-2">
+                              <span className="bg-red-500/15 text-red-500 font-bold px-1 rounded shrink-0">Fila {err.row}</span>
+                              <span className="font-semibold text-gray-700 dark:text-gray-300 shrink-0">{err.client}:</span>
+                              <span className="text-gray-500">{err.reason}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {formError && (
+                  <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-red-500 font-medium">
+                    ⚠️ {formError}
+                  </div>
+                )}
+              </div>
+
+              {/* Botones */}
+              <div className="flex gap-3 justify-end border-t border-border pt-4 mt-4 shrink-0">
+                <button
+                  type="button"
+                  disabled={importing}
+                  onClick={() => setImportModalOpen(false)}
+                  className="rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold hover:bg-secondary transition-colors"
+                >
+                  {importResult ? 'Cerrar' : 'Cancelar'}
+                </button>
+                {!importResult && (
+                  <button
+                    type="button"
+                    disabled={!importFile || importing}
+                    onClick={handleProcessImport}
+                    className="flex items-center gap-2 rounded-xl bg-emerald-500 text-white px-5 py-2 text-sm font-semibold shadow-md hover:bg-emerald-600 active:scale-95 disabled:opacity-50"
+                  >
+                    {importing ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Importando...
+                      </>
+                    ) : (
+                      'Procesar Archivo'
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -15,12 +15,12 @@ export class CreateClientDto {
   dni!: string;
 
   @IsString({ message: 'El teléfono debe ser texto' })
-  @IsNotEmpty({ message: 'El teléfono es obligatorio' })
-  phone!: string;
+  @IsOptional()
+  phone?: string;
 
   @IsString({ message: 'La dirección debe ser texto' })
-  @IsNotEmpty({ message: 'La dirección es obligatoria' })
-  address!: string;
+  @IsOptional()
+  address?: string;
 
   @IsString({ message: 'El tipo de flores debe ser texto' })
   @IsOptional()
@@ -34,8 +34,8 @@ export class CreateClientDto {
   remarks?: string;
 
   @IsUUID('4', { message: 'Debe seleccionar un sector válido' })
-  @IsNotEmpty({ message: 'El sector es obligatorio' })
-  sectorId!: string;
+  @IsOptional()
+  sectorId?: string;
 
   @IsDateString({}, { message: 'La fecha de último pago debe ser una fecha válida' })
   @IsOptional()

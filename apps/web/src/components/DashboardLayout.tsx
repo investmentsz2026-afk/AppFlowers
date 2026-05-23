@@ -14,7 +14,8 @@ import {
   Sun, 
   Moon, 
   User as UserIcon,
-  Flower2
+  Flower2,
+  FileText
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useUiStore } from '../store/uiStore';
@@ -29,6 +30,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { name: 'Clientes', href: '/clients', icon: Users },
     { name: 'Sectores', href: '/sectors', icon: Layers },
     { name: 'Historial', href: '/history', icon: History },
+    { name: 'Reportes', href: '/reports', icon: FileText },
   ];
 
   const [loggingOut, setLoggingOut] = useState(false);
@@ -44,7 +46,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       {/* 1. BARRA LATERAL (ESCRITORIO) */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-card border-r border-border shadow-sm">
+      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-card border-r border-border shadow-sm print:hidden">
         {/* Logo / Cabecera Sidebar */}
         <div className="flex h-16 items-center px-6 gap-2 border-b border-border">
           <Flower2 className="h-6 w-6 text-rose-500 animate-pulse" />
@@ -169,9 +171,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* 3. CONTENEDOR PRINCIPAL */}
-      <div className="flex-1 md:pl-64 flex flex-col min-h-screen w-full min-w-0">
+      <div className="flex-1 md:pl-64 print:pl-0 flex flex-col min-h-screen w-full min-w-0">
         {/* Cabecera Superior (Navbar) */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 md:px-8 shadow-sm">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 md:px-8 shadow-sm print:hidden">
           {/* Lado Izquierdo: Toggle/Logo y Título */}
           <div className="flex items-center gap-3 sm:gap-4">
             <button
@@ -224,7 +226,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* 4. ÁREA DE CONTENIDO */}
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full min-w-0">
+        <main className="flex-1 p-4 md:p-8 print:p-0 overflow-y-auto w-full min-w-0">
           {children}
         </main>
       </div>
