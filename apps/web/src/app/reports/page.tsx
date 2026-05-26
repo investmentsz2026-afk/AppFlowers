@@ -337,7 +337,7 @@ export default function ReportsPage() {
           <div className="space-y-6">
             {/* Header del Reporte al Imprimir */}
             <div className="hidden print:block border-b-2 border-foreground pb-4 space-y-1">
-              <h1 className="text-2xl font-black uppercase text-center">Rossy Flowers</h1>
+              <h1 className="text-2xl font-black uppercase text-center">RossyFlowers</h1>
               <h2 className="text-sm font-bold text-center uppercase tracking-wide">Reporte de Clientes y Pagos de Administración</h2>
               <div className="flex justify-between text-[10px] text-gray-600 font-mono mt-3">
                 <span>Generado el: {new Date().toLocaleDateString('es-PE')} {new Date().toLocaleTimeString('es-PE')}</span>

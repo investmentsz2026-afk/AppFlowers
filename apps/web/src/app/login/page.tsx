@@ -58,7 +58,7 @@ export default function LoginPage() {
           <div className="flex flex-col items-center gap-3 text-center">
             <img 
               src="/logo.png" 
-              alt="Logo Rossy Flowers" 
+              alt="Logo RossyFlowers" 
               className="h-20 w-auto object-contain select-none drop-shadow-lg"
             />
             <h1 
@@ -67,7 +67,7 @@ export default function LoginPage() {
                 filter: 'drop-shadow(1px 1px 0px #fb7185) drop-shadow(2px 2px 0px #f43f5e) drop-shadow(3px 4px 6px rgba(0,0,0,0.45))'
               }}
             >
-              Rossy Flowers
+              RossyFlowers
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Sistema de Gestión Administrativo
@@ -156,7 +156,7 @@ export default function LoginPage() {
           {/* Credenciales rápidas para el usuario (Seed Info) */}
           <div className="mt-6 border-t border-border pt-4 text-center">
             <p className="text-[10px] text-gray-400">
-              © 2026 Rossy Flowers | Todos los derechos reservados | Diseñado con ❤️ <span className="font-semibold text-gray-500 dark:text-gray-300"></span>
+              © 2026 RossyFlowers | Todos los derechos reservados | Diseñado con ❤️ <span className="font-semibold text-gray-500 dark:text-gray-300"></span>
             </p>
           </div>
         </div>

@@ -48,15 +48,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* 1. BARRA LATERAL (ESCRITORIO) */}
       <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-card border-r border-border shadow-sm print:hidden">
         {/* Logo / Cabecera Sidebar */}
-        <div className="flex h-16 items-center px-6 gap-2 border-b border-border">
-          <Flower2 className="h-6 w-6 text-rose-500 animate-pulse" />
+        <div className="flex h-16 items-center px-4 gap-1.5 border-b border-border">
+          <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain select-none" />
           <span 
             className="text-lg font-extrabold tracking-wider bg-gradient-to-r from-rose-500 via-pink-500 to-violet-600 bg-clip-text text-transparent select-none"
             style={{
               filter: 'drop-shadow(1px 1px 0px #fb7185) drop-shadow(2px 2px 0px #f43f5e) drop-shadow(3px 4px 6px rgba(0,0,0,0.45))'
             }}
           >
-            Rossy Flowers
+            RossyFlowers
           </span>
         </div>
         
@@ -120,15 +120,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Logo */}
-          <div className="flex items-center px-6 gap-2 h-16 border-b border-border">
-            <Flower2 className="h-6 w-6 text-rose-500 animate-pulse" />
+          <div className="flex items-center px-4 gap-1.5 h-16 border-b border-border">
+            <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain select-none" />
             <span 
               className="text-lg font-extrabold tracking-wider bg-gradient-to-r from-rose-500 via-pink-500 to-violet-600 bg-clip-text text-transparent select-none"
               style={{
                 filter: 'drop-shadow(1px 1px 0px #fb7185) drop-shadow(2px 2px 0px #f43f5e) drop-shadow(3px 4px 6px rgba(0,0,0,0.45))'
               }}
             >
-              Rossy Flowers
+              RossyFlowers
             </span>
           </div>
 
@@ -187,7 +187,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               <img 
                 src="/logo.png" 
-                alt="Logo Rossy Flowers" 
+                alt="Logo RossyFlowers" 
                 className="h-11 sm:h-13 w-auto object-contain select-none"
               />
             </div>
@@ -233,7 +233,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* OVERLAY: Cerrando Sesión */}
       {loggingOut && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/90 backdrop-blur-md">
-          <img src="/logo.png" alt="Logo Rossy Flowers" className="h-20 w-auto object-contain mb-6 animate-pulse" />
+          <img src="/logo.png" alt="Logo RossyFlowers" className="h-20 w-auto object-contain mb-6 animate-pulse" />
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-rose-500 border-t-transparent mb-4"></div>
           <p 
             className="text-lg font-extrabold tracking-wider bg-gradient-to-r from-rose-500 via-pink-500 to-violet-600 bg-clip-text text-transparent"
