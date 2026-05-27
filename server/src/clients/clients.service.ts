@@ -343,6 +343,53 @@ export class ClientsService {
     return count;
   }
 
+  // Auxiliar para parsear fechas de Excel/CSV en varios formatos (DD/MM/AAAA, AAAA-MM-DD, números de serie de Excel)
+  private parseExcelDate(dateVal: any): Date | null {
+    if (!dateVal) return null;
+    if (dateVal instanceof Date) return dateVal;
+    
+    const str = dateVal.toString().trim();
+    if (!str) return null;
+
+    // 1. Intentar formato DD/MM/AAAA o DD-MM-AAAA
+    const dmyRegex = /^(\d{1,2})[/\-](\d{1,2})[/\-](\d{2,4})$/;
+    const match = str.match(dmyRegex);
+    if (match) {
+      const day = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1;
+      let year = parseInt(match[3], 10);
+      if (year < 100) {
+        year += year < 50 ? 2000 : 1900;
+      }
+      const parsedDate = new Date(Date.UTC(year, month, day));
+      if (!isNaN(parsedDate.getTime())) return parsedDate;
+    }
+
+    // 2. Intentar número de serie de fecha de Excel (ej. 45335)
+    const num = Number(str);
+    if (!isNaN(num) && num > 10000 && num < 100000) {
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+      const parsedDate = new Date(excelEpoch.getTime() + num * 24 * 60 * 60 * 1000);
+      if (!isNaN(parsedDate.getTime())) return parsedDate;
+    }
+
+    // 3. Intentar formato estándar YYYY-MM-DD
+    const ymdRegex = /^(\d{4})[/\-](\d{1,2})[/\-](\d{1,2})$/;
+    const ymdMatch = str.match(ymdRegex);
+    if (ymdMatch) {
+      const year = parseInt(ymdMatch[1], 10);
+      const month = parseInt(ymdMatch[2], 10) - 1;
+      const day = parseInt(ymdMatch[3], 10);
+      return new Date(Date.UTC(year, month, day));
+    }
+
+    // 4. Fallback estándar
+    const standardDate = new Date(str);
+    if (!isNaN(standardDate.getTime())) return standardDate;
+
+    return new Date(NaN);
+  }
+
   // Importación masiva de clientes desde Excel/CSV
   async bulkCreate(clientsData: any[], userId: string) {
     const results = {
@@ -415,15 +462,15 @@ export class ClientsService {
         }
 
         // Validar e inyectar fechas si existen (se aceptan nulas)
-        const parsedLastPayment = data.lastPaymentDate ? new Date(data.lastPaymentDate) : null;
-        const parsedNextDue = data.nextDueDate ? new Date(data.nextDueDate) : null;
+        const parsedLastPayment = this.parseExcelDate(data.lastPaymentDate);
+        const parsedNextDue = this.parseExcelDate(data.nextDueDate);
         
         // Validar que si se proveen fechas sean sintácticamente válidas
-        if (data.lastPaymentDate && isNaN(parsedLastPayment!.getTime())) {
-          throw new Error('La fecha de último pago no es válida');
+        if (data.lastPaymentDate && (!parsedLastPayment || isNaN(parsedLastPayment.getTime()))) {
+          throw new Error('La fecha de último pago no es válida (use formato DD/MM/AAAA o AAAA-MM-DD)');
         }
-        if (data.nextDueDate && isNaN(parsedNextDue!.getTime())) {
-          throw new Error('La fecha de vencimiento no es válida');
+        if (data.nextDueDate && (!parsedNextDue || isNaN(parsedNextDue.getTime()))) {
+          throw new Error('La fecha de vencimiento no es válida (use formato DD/MM/AAAA o AAAA-MM-DD)');
         }
 
         const status = this.computeStatus(parsedNextDue);

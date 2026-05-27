@@ -188,10 +188,30 @@ export default function ClientsPage() {
             const separator = headerLine.includes(';') ? ';' : ',';
             const headers = headerLine.split(separator).map(h => h.trim().replace(/^["']|["']$/g, ''));
 
+            // Helper para parsear una línea de CSV respetando comillas y comas internas
+            const parseCsvLine = (textLine: string, sep: string) => {
+              const result: string[] = [];
+              let inQuotes = false;
+              let token = '';
+              for (let j = 0; j < textLine.length; j++) {
+                const char = textLine[j];
+                if (char === '"' || char === "'") {
+                  inQuotes = !inQuotes;
+                } else if (char === sep && !inQuotes) {
+                  result.push(token.trim().replace(/^["']|["']$/g, ''));
+                  token = '';
+                } else {
+                  token += char;
+                }
+              }
+              result.push(token.trim().replace(/^["']|["']$/g, ''));
+              return result;
+            };
+
             for (let i = 1; i < lines.length; i++) {
               const line = lines[i].trim();
               if (!line) continue;
-              const values = line.split(separator).map(v => v.trim().replace(/^["']|["']$/g, ''));
+              const values = parseCsvLine(line, separator);
               
               const row: any = {};
               headers.forEach((header, index) => {
