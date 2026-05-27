@@ -239,9 +239,29 @@ export default function ClientsPage() {
               return foundKey ? row[foundKey] : undefined;
             };
 
+            let dniVal = findValue(['dni', 'documento', 'identidad']);
+            
+            // Si el DNI está vacío o no se encontró, buscar en columnas sin cabecera (como __EMPTY)
+            // o buscar cualquier valor numérico de 8 dígitos en la fila.
+            if (!dniVal || dniVal.toString().trim() === '') {
+              const emptyHeaderKey = Object.keys(row).find(k => k.startsWith('__EMPTY'));
+              if (emptyHeaderKey && row[emptyHeaderKey] && row[emptyHeaderKey].toString().trim() !== '') {
+                dniVal = row[emptyHeaderKey];
+              } else {
+                const anyEightDigitVal = Object.values(row).find(val => {
+                  if (!val) return false;
+                  const s = val.toString().trim();
+                  return /^\d{8}$/.test(s);
+                });
+                if (anyEightDigitVal) {
+                  dniVal = anyEightDigitVal;
+                }
+              }
+            }
+
             return {
               fullName: findValue(['fullName', 'nombre completo', 'difunto', 'nombre']),
-              dni: findValue(['dni', 'documento', 'identidad']),
+              dni: dniVal ? dniVal.toString().trim() : undefined,
               contactName: findValue(['contactName', 'contacto', 'familiar', 'responsable']),
               phone: findValue(['phone', 'telefono', 'celular']),
               address: findValue(['address', 'direccion', 'ubicacion', 'parcela', 'nicho']),
