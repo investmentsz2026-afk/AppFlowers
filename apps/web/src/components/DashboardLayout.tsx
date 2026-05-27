@@ -44,7 +44,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen bg-background text-foreground layout-root">
       {/* 1. BARRA LATERAL (ESCRITORIO) */}
       <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-card border-r border-border shadow-sm print:hidden">
         {/* Logo / Cabecera Sidebar */}
@@ -171,7 +171,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* 3. CONTENEDOR PRINCIPAL */}
-      <div className="flex-1 md:pl-64 print:pl-0 flex flex-col min-h-screen w-full min-w-0">
+      <div className="flex-1 md:pl-64 print:pl-0 flex flex-col min-h-screen w-full min-w-0 layout-content-wrapper">
         {/* Cabecera Superior (Navbar) */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 md:px-8 shadow-sm print:hidden">
           {/* Lado Izquierdo: Toggle/Logo y Título */}
@@ -226,7 +226,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* 4. ÁREA DE CONTENIDO */}
-        <main className="flex-1 p-4 md:p-8 print:p-0 overflow-y-auto w-full min-w-0">
+        <main className="flex-1 p-4 md:p-8 print:p-0 overflow-y-auto w-full min-w-0 layout-main-content">
           {children}
         </main>
       </div>

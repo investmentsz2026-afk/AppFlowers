@@ -91,3 +91,47 @@
   background-color: hsl(223, 47%, 14%);
   color: hsl(210, 40%, 98%);
 }
+
+/* ==========================================================================
+   ESTILOS DE IMPRESIÓN (WINDOW.PRINT / PDF)
+   ========================================================================== */
+@media print {
+  /* 1. Forzar tema claro en la impresión (ignorar modo oscuro del sistema) */
+  html, body, :root, .dark {
+    --background: hsl(0, 0%, 100%) !important;
+    --foreground: hsl(0, 0%, 0%) !important;
+    --card: hsl(0, 0%, 100%) !important;
+    --card-foreground: hsl(0, 0%, 0%) !important;
+    --secondary: hsl(0, 0%, 95%) !important;
+    --border: hsl(0, 0%, 80%) !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  body {
+    position: static !important;
+  }
+
+  /* 2. Quitar restricciones de altura y scrolling para evitar que se corten registros */
+  .layout-root,
+  .layout-content-wrapper,
+  .layout-main-content {
+    display: block !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Asegurar que la tabla y celdas no tengan overflows ocultos */
+  table, thead, tbody, tr, th, td {
+    overflow: visible !important;
+    page-break-inside: avoid !important;
+  }
+}
+
