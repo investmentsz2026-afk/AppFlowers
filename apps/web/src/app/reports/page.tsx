@@ -19,6 +19,16 @@ import {
   Clock
 } from 'lucide-react';
 
+const formatUtcDate = (dateStr: string | null | undefined) => {
+  if (!dateStr) return 'N/A';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return 'N/A';
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = date.getUTCFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export default function ReportsPage() {
   // 1. Estados para Filtros
   const [search, setSearch] = useState('');
@@ -119,8 +129,8 @@ export default function ReportsPage() {
       c.sector?.name || 'Sin Sector',
       c.flowers || '',
       c.amount ? c.amount.toFixed(2) : '0.00',
-      c.lastPaymentDate ? new Date(c.lastPaymentDate).toLocaleDateString('es-PE') : 'N/A',
-      c.nextDueDate ? new Date(c.nextDueDate).toLocaleDateString('es-PE') : 'N/A',
+      formatUtcDate(c.lastPaymentDate),
+      formatUtcDate(c.nextDueDate),
       c.status === 'ACTIVE' ? 'Activo' : c.status === 'PENDING' ? 'Próximo a Vencer' : 'Vencido'
     ]);
 
@@ -415,10 +425,10 @@ export default function ReportsPage() {
                           <td className="px-3 py-2.5 text-gray-500 italic print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">{c.flowers || '-'}</td>
                           <td className="px-3 py-2.5 font-bold text-emerald-500 font-mono print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">S/. {c.amount ? c.amount.toFixed(2) : '0.00'}</td>
                           <td className="px-3 py-2.5 text-gray-500 font-mono print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">
-                            {c.lastPaymentDate ? new Date(c.lastPaymentDate).toLocaleDateString('es-PE') : 'N/A'}
+                            {formatUtcDate(c.lastPaymentDate)}
                           </td>
                           <td className="px-3 py-2.5 font-bold font-mono text-gray-700 dark:text-gray-300 print:text-black print:px-1 print:py-0.5 print:text-[8px] print:leading-none">
-                            {c.nextDueDate ? new Date(c.nextDueDate).toLocaleDateString('es-PE') : 'N/A'}
+                            {formatUtcDate(c.nextDueDate)}
                           </td>
                           <td className="px-3 py-2.5 text-center print:text-right print:font-bold print:px-1 print:py-0.5 print:text-[8px] print:leading-none">
                             <span className="print:hidden">

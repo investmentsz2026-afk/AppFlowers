@@ -24,6 +24,16 @@ import {
   Upload
 } from 'lucide-react';
 
+const formatUtcDate = (dateStr: string | null | undefined) => {
+  if (!dateStr) return 'N/A';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return 'N/A';
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = date.getUTCFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export default function ClientsPage() {
   const queryClient = useQueryClient();
   
@@ -506,7 +516,7 @@ export default function ClientsPage() {
                       let daysElapsed = 0;
                       if (client.lastPaymentDate) {
                         const startDate = new Date(client.lastPaymentDate);
-                        const startReset = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                        const startReset = new Date(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate());
                         const diffTime = todayReset.getTime() - startReset.getTime();
                         daysElapsed = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
                       }
@@ -514,7 +524,7 @@ export default function ClientsPage() {
                       let daysRemaining = 0;
                       if (client.nextDueDate) {
                         const dueDate = new Date(client.nextDueDate);
-                        const dueReset = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+                        const dueReset = new Date(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), dueDate.getUTCDate());
                         const diffTime = dueReset.getTime() - todayReset.getTime();
                         daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                       }
@@ -534,13 +544,13 @@ export default function ClientsPage() {
                           <td className="px-3 py-3.5 font-bold text-emerald-500 font-mono">S/. {client.amount ? client.amount.toFixed(2) : '0.00'}</td>
                           <td className="px-3 py-3.5 text-gray-600 dark:text-gray-400 italic">{client.flowers || '-'}</td>
                           <td className="px-3 py-3.5 text-gray-500 font-mono">
-                            {client.lastPaymentDate ? new Date(client.lastPaymentDate).toLocaleDateString('es-PE') : 'N/A'}
+                            {formatUtcDate(client.lastPaymentDate)}
                           </td>
                           <td className="px-3 py-3.5 text-center font-mono font-bold text-indigo-500 dark:text-indigo-400">
                             {daysElapsed}
                           </td>
                           <td className="px-3 py-3.5 text-gray-500 font-mono">
-                            {client.nextDueDate ? new Date(client.nextDueDate).toLocaleDateString('es-PE') : 'N/A'}
+                            {formatUtcDate(client.nextDueDate)}
                           </td>
                           <td className={`px-3 py-3.5 text-center font-mono font-bold ${
                             daysRemaining < 0 
@@ -594,7 +604,7 @@ export default function ClientsPage() {
                 let daysElapsed = 0;
                 if (client.lastPaymentDate) {
                   const startDate = new Date(client.lastPaymentDate);
-                  const startReset = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                  const startReset = new Date(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate());
                   const diffTime = todayReset.getTime() - startReset.getTime();
                   daysElapsed = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
                 }
@@ -602,7 +612,7 @@ export default function ClientsPage() {
                 let daysRemaining = 0;
                 if (client.nextDueDate) {
                   const dueDate = new Date(client.nextDueDate);
-                  const dueReset = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+                  const dueReset = new Date(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), dueDate.getUTCDate());
                   const diffTime = dueReset.getTime() - todayReset.getTime();
                   daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 }
@@ -646,7 +656,7 @@ export default function ClientsPage() {
                       <div>
                         <p className="text-gray-400">Inicio / Vence</p>
                         <p className="font-medium text-gray-600 dark:text-gray-300 font-mono text-[10px]">
-                          {client.lastPaymentDate ? new Date(client.lastPaymentDate).toLocaleDateString('es-PE') : 'N/A'} / {client.nextDueDate ? new Date(client.nextDueDate).toLocaleDateString('es-PE') : 'N/A'}
+                          {formatUtcDate(client.lastPaymentDate)} / {formatUtcDate(client.nextDueDate)}
                         </p>
                       </div>
                       <div>

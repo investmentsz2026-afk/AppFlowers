@@ -18,6 +18,16 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+const formatUtcDate = (dateStr: string | null | undefined) => {
+  if (!dateStr) return 'N/A';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return 'N/A';
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = date.getUTCFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export default function DashboardPage() {
   // Query para obtener estadísticas en tiempo real
   const { data: stats, isLoading, isError, error } = useQuery({
@@ -172,7 +182,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
                       <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-500 border border-amber-500/20">
-                        Vence el {new Date(client.nextDueDate).toLocaleDateString()}
+                        Vence el {formatUtcDate(client.nextDueDate)}
                       </span>
                     </div>
                   </div>
