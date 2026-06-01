@@ -8,6 +8,7 @@ import { ClientsModule } from './clients/clients.module';
 import { PaymentsModule } from './payments/payments.module';
 import { HistoryModule } from './history/history.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -26,6 +27,7 @@ import { AppController } from './app.controller';
     PaymentsModule,
     HistoryModule,
     DashboardModule,
+    UsersModule,
   ],
   controllers: [AppController],
 })

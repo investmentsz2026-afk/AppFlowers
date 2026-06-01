@@ -8,7 +8,7 @@ import { useUiStore } from '../store/uiStore';
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, initializeAuth } = useAuthStore();
+  const { isAuthenticated, user, initializeAuth } = useAuthStore();
   const { initializeTheme } = useUiStore();
   const [loading, setLoading] = useState(true);
 
@@ -26,10 +26,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (!isAuthenticated && !isPublicPath) {
       router.push('/login');
-    } else if (isAuthenticated && isPublicPath) {
-      router.push('/dashboard');
+    } else if (isAuthenticated) {
+      if (isPublicPath) {
+        router.push('/dashboard');
+      } else if (pathname === '/users' && user?.role !== 'ADMIN') {
+        router.push('/dashboard');
+      }
     }
-  }, [isAuthenticated, pathname, loading, router]);
+  }, [isAuthenticated, user, pathname, loading, router]);
 
   if (loading) {
     return (

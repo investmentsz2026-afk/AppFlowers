@@ -15,7 +15,8 @@ import {
   Moon, 
   User as UserIcon,
   Flower2,
-  FileText
+  FileText,
+  UserCog
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useUiStore } from '../store/uiStore';
@@ -31,6 +32,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { name: 'Sectores', href: '/sectors', icon: Layers },
     { name: 'Historial', href: '/history', icon: History },
     { name: 'Reportes', href: '/reports', icon: FileText },
+    ...(user?.role === 'ADMIN' ? [{ name: 'Personal', href: '/users', icon: UserCog }] : []),
+    { name: 'Mi Perfil', href: '/profile', icon: UserIcon },
   ];
 
   const [loggingOut, setLoggingOut] = useState(false);
@@ -85,7 +88,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Footer Sidebar (Usuario y Config) */}
-        <div className="border-t border-border p-4 bg-secondary/30">
+        <Link href="/profile" className="block border-t border-border p-4 bg-secondary/30 hover:bg-secondary/60 transition-colors">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
               <UserIcon className="h-5 w-5" />
@@ -95,7 +98,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <p className="truncate text-[10px] text-gray-500 dark:text-gray-400 capitalize">{user?.role?.toLowerCase() || 'admin'}</p>
             </div>
           </div>
-        </div>
+        </Link>
       </aside>
 
       {/* 2. MENÚ LATERAL MÓVIL (DESPLEGABLE / DRAWER) */}
@@ -156,7 +159,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Perfil en Drawer */}
-          <div className="border-t border-border p-4 bg-secondary/30">
+          <Link href="/profile" onClick={() => setSidebarOpen(false)} className="block border-t border-border p-4 bg-secondary/30 hover:bg-secondary/60 transition-colors">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <UserIcon className="h-5 w-5" />
@@ -166,7 +169,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <p className="truncate text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role?.toLowerCase() || 'admin'}</p>
               </div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 
