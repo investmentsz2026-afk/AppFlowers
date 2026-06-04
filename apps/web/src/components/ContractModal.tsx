@@ -113,14 +113,56 @@ export function ContractModal({ clientId, isOpen, onClose }: ContractModalProps)
       {/* Estilos CSS globales inyectados dinámicamente solo para impresión */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          /* Ocultar elementos estructurales del dashboard y modales */
-          .layout-root, .layout-content-wrapper, .layout-main-content, header, aside, .modal-action-bar, .modal-backdrop-overlay, .modal-close-btn, button {
+          /* Ocultar elementos estructurales de la pantalla original */
+          .layout-root, .layout-content-wrapper, .layout-main-content {
+            position: static !important;
+            display: block !important;
+            overflow: visible !important;
+            width: auto !important;
+            height: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+          }
+          
+          /* Ocultar barras de navegación, botones y el fondo del modal */
+          aside, header, nav, .modal-action-bar, .modal-backdrop-bg, button, svg {
             display: none !important;
             visibility: hidden !important;
             height: 0 !important;
+            width: 0 !important;
             padding: 0 !important;
             margin: 0 !important;
           }
+
+          /* Hacer que el contenedor del modal cubra toda la página */
+          .modal-backdrop-overlay {
+            position: static !important;
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            width: 100% !important;
+            height: auto !important;
+          }
+
+          /* Estilizar la caja del modal como contenedor plano invisible */
+          .modal-box-container {
+            position: static !important;
+            display: block !important;
+            max-height: none !important;
+            max-width: none !important;
+            width: 100% !important;
+            height: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
+          }
+
           /* Asegurar que el body y html no tengan fondos oscuros ni scroll */
           html, body {
             background: white !important;
@@ -128,6 +170,7 @@ export function ContractModal({ clientId, isOpen, onClose }: ContractModalProps)
             overflow: visible !important;
             height: auto !important;
           }
+
           /* Posicionar el wrapper del contrato en la esquina superior */
           .printable-contract-container {
             position: absolute !important;
@@ -136,23 +179,26 @@ export function ContractModal({ clientId, isOpen, onClose }: ContractModalProps)
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
-            padding: 5mm !important;
+            padding: 0 !important;
             border: none !important;
             box-shadow: none !important;
             background: white !important;
             color: black !important;
             visibility: visible !important;
           }
+
           .printable-contract-container * {
             visibility: visible !important;
             color: black !important;
             color-scheme: light !important;
           }
+
           .highlight-yellow-print {
             background-color: #fef08a !important; /* bg-yellow-200 */
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
+
           @page {
             size: portrait;
             margin: 15mm;
@@ -161,10 +207,10 @@ export function ContractModal({ clientId, isOpen, onClose }: ContractModalProps)
       ` }} />
 
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm modal-backdrop-bg print:hidden" onClick={onClose} />
 
       {/* Caja del Modal */}
-      <div className="relative w-full max-w-4xl max-h-[92vh] rounded-2xl border border-border bg-card p-6 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-4xl max-h-[92vh] rounded-2xl border border-border bg-card p-6 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200 modal-box-container">
         
         {/* Barra de Acciones del Modal */}
         <div className="flex items-center justify-between border-b border-border pb-4 mb-4 shrink-0 modal-action-bar">
@@ -306,9 +352,9 @@ export function ContractModal({ clientId, isOpen, onClose }: ContractModalProps)
 
               {/* Firmas */}
               <div className="grid grid-cols-2 gap-12 pt-20 mt-12 text-center text-[11px]">
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center justify-end">
+                  <p className="font-bold text-gray-800 mb-1">WILLIAM SANTANA</p>
                   <div className="w-48 border-b border-black border-dashed mb-2"></div>
-                  <p className="font-bold text-gray-800">WILLIAM SANTANA</p>
                   <p className="font-bold text-gray-700">LA CONCESIONARIA</p>
                   <p className="text-gray-500">Florería Rossyflowers</p>
                   <p className="text-gray-500">Ruc: 2051051844</p>
