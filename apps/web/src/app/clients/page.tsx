@@ -126,6 +126,7 @@ export default function ClientsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clientsList'] });
+      queryClient.invalidateQueries({ queryKey: ['clientDetails'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       setClientModalOpen(false);
       resetClientForm();
@@ -142,6 +143,7 @@ export default function ClientsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clientsList'] });
+      queryClient.invalidateQueries({ queryKey: ['clientDetails'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       setPaymentModalOpen(false);
       setPaymentClient(null);
@@ -284,6 +286,7 @@ export default function ClientsPage() {
           setImportResult(response.data);
           
           queryClient.invalidateQueries({ queryKey: ['clientsList'] });
+          queryClient.invalidateQueries({ queryKey: ['clientDetails'] });
           queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
         } catch (err: any) {
           setFormError(err.response?.data?.message || err.message || 'Error al procesar el archivo. Verifique el formato.');
