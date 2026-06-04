@@ -57,7 +57,7 @@ export default function ContractsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 print:hidden">
         {/* Cabecera */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
@@ -232,17 +232,17 @@ export default function ContractsPage() {
             </div>
           </div>
         )}
-
-        {/* MODAL: VISOR DE CONTRATO */}
-        <ContractModal
-          clientId={contractClientId}
-          isOpen={contractModalOpen}
-          onClose={() => {
-            setContractModalOpen(false);
-            setContractClientId(null);
-          }}
-        />
       </div>
+
+      {/* MODAL: VISOR DE CONTRATO */}
+      <ContractModal
+        clientId={contractClientId}
+        isOpen={contractModalOpen}
+        onClose={() => {
+          setContractModalOpen(false);
+          setContractClientId(null);
+        }}
+      />
     </DashboardLayout>
   );
 }

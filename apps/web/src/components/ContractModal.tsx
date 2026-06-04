@@ -163,6 +163,16 @@ export function ContractModal({ clientId, isOpen, onClose }: ContractModalProps)
             background: white !important;
           }
 
+          /* Evitar colapso o scroll en la impresion */
+          .modal-scroll-content {
+            display: block !important;
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
           /* Asegurar que el body y html no tengan fondos oscuros ni scroll */
           html, body {
             background: white !important;
@@ -248,7 +258,7 @@ export function ContractModal({ clientId, isOpen, onClose }: ContractModalProps)
         </div>
 
         {/* Cuerpo / Visualizador del Contrato */}
-        <div className="flex-1 overflow-y-auto pr-1 select-text scrollbar-thin">
+        <div className="flex-1 overflow-y-auto pr-1 select-text scrollbar-thin modal-scroll-content">
           {isLoading ? (
             <div className="flex h-64 items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
