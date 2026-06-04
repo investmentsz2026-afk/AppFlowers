@@ -197,6 +197,15 @@ export class ClientsService {
       throw new NotFoundException('El cliente solicitado no existe.');
     }
 
+    // Calcular el número correlativo de contrato basado en la fecha de creación
+    const sequenceNumber = await this.prisma.client.count({
+      where: {
+        createdAt: {
+          lte: client.createdAt,
+        },
+      },
+    });
+
     // Sincronizar estado en caliente al consultar detalle individual
     const synced = await this.syncStatus(client);
     
@@ -205,6 +214,7 @@ export class ClientsService {
       sector: client.sector,
       payments: client.payments,
       histories: client.histories,
+      contractNumber: String(sequenceNumber).padStart(6, '0'),
     };
   }
 

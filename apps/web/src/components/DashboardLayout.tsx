@@ -16,7 +16,8 @@ import {
   User as UserIcon,
   Flower2,
   FileText,
-  UserCog
+  UserCog,
+  FileSignature
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useUiStore } from '../store/uiStore';
@@ -30,6 +31,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
     { name: 'Clientes', href: '/clients', icon: Users },
     { name: 'Sectores', href: '/sectors', icon: Layers },
+    { name: 'Contratos', href: '/contracts', icon: FileSignature },
     { name: 'Historial', href: '/history', icon: History },
     { name: 'Reportes', href: '/reports', icon: FileText },
     ...(user?.role === 'ADMIN' ? [{ name: 'Personal', href: '/users', icon: UserCog }] : []),

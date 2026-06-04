@@ -21,8 +21,10 @@ import {
   UserPlus,
   Coins,
   FileSpreadsheet,
-  Upload
+  Upload,
+  FileSignature
 } from 'lucide-react';
+import { ContractModal } from '../../components/ContractModal';
 
 const formatUtcDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return 'N/A';
@@ -56,6 +58,10 @@ export default function ClientsPage() {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<any | null>(null);
+
+  // D. Estados para Contratos
+  const [contractModalOpen, setContractModalOpen] = useState(false);
+  const [contractClientId, setContractClientId] = useState<string | null>(null);
 
   // A. Formularios Locales - Crear/Editar Cliente
   const [clientForm, setClientForm] = useState({
@@ -605,6 +611,16 @@ export default function ClientsPage() {
                           <td className="px-3 py-3.5 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               <button
+                                onClick={() => {
+                                  setContractClientId(client.id);
+                                  setContractModalOpen(true);
+                                }}
+                                className="flex h-7.5 w-7.5 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 hover:bg-indigo-500 hover:text-white transition-all duration-200"
+                                title="Ver Contrato"
+                              >
+                                <FileSignature className="h-3.5 w-3.5" />
+                              </button>
+                              <button
                                 onClick={() => handleOpenPaymentModal(client)}
                                 className="flex h-7.5 w-7.5 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all duration-200"
                                 title="Cobrar Pago Express"
@@ -710,6 +726,16 @@ export default function ClientsPage() {
                     </div>
  
                     <div className="flex gap-2 border-t border-border pt-3">
+                      <button
+                        onClick={() => {
+                          setContractClientId(client.id);
+                          setContractModalOpen(true);
+                        }}
+                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 hover:bg-indigo-500 hover:text-white transition-all"
+                        title="Ver Contrato"
+                      >
+                        <FileSignature className="h-4 w-4" />
+                      </button>
                       <button
                         onClick={() => handleOpenPaymentModal(client)}
                         className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 text-white py-2 text-xs font-bold shadow-md hover:bg-emerald-600 transition-colors"
@@ -1221,6 +1247,15 @@ export default function ClientsPage() {
             </div>
           </div>
         )}
+        {/* MODAL: CONTRATO */}
+        <ContractModal 
+          clientId={contractClientId} 
+          isOpen={contractModalOpen} 
+          onClose={() => {
+            setContractModalOpen(false);
+            setContractClientId(null);
+          }} 
+        />
       </div>
     </DashboardLayout>
   );
