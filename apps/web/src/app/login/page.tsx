@@ -56,11 +56,14 @@ export default function LoginPage() {
         <div className="rounded-2xl border border-border bg-card p-8 shadow-2xl backdrop-blur-md">
           {/* Logo y Encabezado */}
           <div className="flex flex-col items-center gap-3 text-center">
-            <img 
-              src="/logo.png" 
-              alt="Logo RossyFlowers" 
-              className="h-20 w-auto object-contain select-none drop-shadow-lg"
-            />
+            {/* Cuadro 3D para el Logo */}
+            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-white/80 to-white/30 dark:from-white/10 dark:to-white/5 border border-white/20 shadow-[inset_0_1px_3px_rgba(255,255,255,0.4),0_10px_20px_rgba(0,0,0,0.15),0_2px_5px_rgba(0,0,0,0.1)] before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none transform hover:perspective-500 hover:rotate-x-3 hover:rotate-y-3 transition-transform duration-300">
+              <img 
+                src="/logo.png" 
+                alt="Logo RossyFlowers" 
+                className="h-20 w-auto object-contain select-none drop-shadow-[0_8px_16px_rgba(0,0,0,0.2)]"
+              />
+            </div>
             <h1 
               className="text-2xl font-extrabold tracking-wider bg-gradient-to-r from-rose-500 via-pink-500 to-violet-600 bg-clip-text text-transparent select-none"
               style={{
