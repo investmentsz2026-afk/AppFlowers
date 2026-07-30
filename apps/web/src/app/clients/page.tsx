@@ -36,6 +36,26 @@ const formatUtcDate = (dateStr: string | null | undefined) => {
   return `${day}/${month}/${year}`;
 };
 
+const getAnniversaryDaysRemaining = (dateStr: string | null | undefined) => {
+  if (!dateStr) return null;
+  const annDate = new Date(dateStr);
+  if (isNaN(annDate.getTime())) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Fecha del aniversario este año
+  let targetDate = new Date(today.getFullYear(), annDate.getUTCMonth(), annDate.getUTCDate());
+
+  // Si ya pasó este año, calculamos para el siguiente año
+  if (targetDate.getTime() < today.getTime()) {
+    targetDate.setFullYear(today.getFullYear() + 1);
+  }
+
+  const diffTime = targetDate.getTime() - today.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
 export default function ClientsPage() {
   const queryClient = useQueryClient();
   
@@ -76,6 +96,8 @@ export default function ClientsPage() {
     remarks: '',
     lastPaymentDate: '',
     nextDueDate: '',
+    anniversaryDate: '',
+    anniversaryRemarks: '',
   });
 
   // B. Formularios Locales - Registrar Pago
@@ -320,6 +342,8 @@ export default function ClientsPage() {
       remarks: '',
       lastPaymentDate: '',
       nextDueDate: '',
+      anniversaryDate: '',
+      anniversaryRemarks: '',
     });
     setEditingClient(null);
     setFormError(null);
@@ -347,6 +371,8 @@ export default function ClientsPage() {
       remarks: client.remarks || '',
       lastPaymentDate: client.lastPaymentDate ? new Date(client.lastPaymentDate).toISOString().split('T')[0] : '',
       nextDueDate: client.nextDueDate ? new Date(client.nextDueDate).toISOString().split('T')[0] : '',
+      anniversaryDate: client.anniversaryDate ? new Date(client.anniversaryDate).toISOString().split('T')[0] : '',
+      anniversaryRemarks: client.anniversaryRemarks || '',
     });
     setClientModalOpen(true);
   };
@@ -373,6 +399,8 @@ export default function ClientsPage() {
       sectorId: clientForm.sectorId || undefined,
       lastPaymentDate: clientForm.lastPaymentDate || undefined,
       nextDueDate: clientForm.nextDueDate || undefined,
+      anniversaryDate: clientForm.anniversaryDate || undefined,
+      anniversaryRemarks: clientForm.anniversaryRemarks || undefined,
       amount: parseFloat(clientForm.amount.toString()) || 0.0
     };
 
@@ -396,6 +424,23 @@ export default function ClientsPage() {
     if (window.confirm(`¿Está seguro de eliminar definitivamente a ${client.fullName}? Se perderán todos sus pagos registrados.`)) {
       deleteMutation.mutate(client.id);
     }
+  };
+
+  const handleSendWhatsAppReminder = (client: any) => {
+    if (!client.phone || !client.phone.trim()) {
+      alert("Este cliente no tiene número de teléfono registrado, así que no se puede enviar el mensaje de WhatsApp.");
+      return;
+    }
+
+    const cleanPhone = client.phone.replace(/\D/g, '');
+    const formattedPhone = cleanPhone.startsWith('51') ? cleanPhone : `51${cleanPhone}`;
+    const dateFormatted = formatUtcDate(client.anniversaryDate);
+    const reason = client.anniversaryRemarks || 'su aniversario';
+
+    const message = `Hola ${client.contactName || 'estimado cliente'}, de parte de Florería Padre Eterno le escribimos porque se acerca una fecha muy especial: el ${dateFormatted} es el ${reason} de ${client.fullName}. ¿Le gustaría separar un ramo especial o arreglo floral para esta conmemoración?`;
+
+    const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
   };
 
   // Helper Badge
@@ -581,7 +626,38 @@ export default function ClientsPage() {
                       return (
                         <tr key={client.id} className="hover:bg-secondary/15 transition-colors">
                           <td className="px-3 py-3.5 font-medium text-gray-700 dark:text-gray-300">{client.contactName || '-'}</td>
-                          <td className="px-3 py-3.5 font-bold text-foreground">{client.fullName}</td>
+                          <td className="px-3 py-3.5">
+                            <span className="font-bold text-foreground block">{client.fullName}</span>
+                            {client.anniversaryDate && (
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                                  (() => {
+                                    const days = getAnniversaryDaysRemaining(client.anniversaryDate);
+                                    if (days !== null && days <= 7) {
+                                      return 'bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse';
+                                    }
+                                    return 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
+                                  })()
+                                }`}>
+                                  🎂 {formatUtcDate(client.anniversaryDate)}: {client.anniversaryRemarks || 'Aniversario'}
+                                  {(() => {
+                                    const days = getAnniversaryDaysRemaining(client.anniversaryDate);
+                                    if (days !== null && days <= 7) {
+                                      return ` (¡Próximo, quedan ${days}d!)`;
+                                    }
+                                    return '';
+                                  })()}
+                                </span>
+                                <button
+                                  onClick={() => handleSendWhatsAppReminder(client)}
+                                  className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all cursor-pointer"
+                                  title="Enviar Recordatorio por WhatsApp"
+                                >
+                                  💬 Enviar Recordatorio
+                                </button>
+                              </div>
+                            )}
+                          </td>
                           <td className="px-3 py-3.5 text-gray-500 font-mono">{client.dni}</td>
                           <td className="px-3 py-3.5 text-gray-500 font-mono">{client.phone}</td>
                           <td className="px-3 py-3.5">
@@ -954,6 +1030,30 @@ export default function ClientsPage() {
                             value={clientForm.nextDueDate}
                             onChange={(e) => setClientForm(prev => ({ ...prev, nextDueDate: e.target.value }))}
                             className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none cursor-pointer focus:border-primary focus:ring-1 focus:ring-primary font-mono text-gray-700 dark:text-gray-300"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Cumpleaños / Aniversario Conmemorativo */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Fecha de Aniversario / Cumpleaños</label>
+                          <input
+                            type="date"
+                            value={clientForm.anniversaryDate}
+                            onChange={(e) => setClientForm(prev => ({ ...prev, anniversaryDate: e.target.value }))}
+                            className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none cursor-pointer focus:border-primary focus:ring-1 focus:ring-primary font-mono text-gray-700 dark:text-gray-300"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Detalle del Aniversario (Motivo)</label>
+                          <input
+                            type="text"
+                            value={clientForm.anniversaryRemarks}
+                            onChange={(e) => setClientForm(prev => ({ ...prev, anniversaryRemarks: e.target.value }))}
+                            placeholder="Ej. Cumpleaños / Fallecimiento"
+                            className="mt-1 block w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                           />
                         </div>
                       </div>

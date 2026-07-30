@@ -44,4 +44,12 @@ export class UpdateClientDto {
   @IsDateString({}, { message: 'La fecha de vencimiento debe ser una fecha válida' })
   @IsOptional()
   nextDueDate?: string;
+
+  @IsDateString({}, { message: 'La fecha de aniversario/cumpleaños debe ser una fecha válida' })
+  @IsOptional()
+  anniversaryDate?: string;
+
+  @IsString({ message: 'Los detalles del aniversario deben ser texto' })
+  @IsOptional()
+  anniversaryRemarks?: string;
 }

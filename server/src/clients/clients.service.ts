@@ -42,7 +42,7 @@ export class ClientsService {
   }
 
   async create(createClientDto: CreateClientDto, userId: string) {
-    const { sectorId, dni, lastPaymentDate, nextDueDate, ...rest } = createClientDto;
+    const { sectorId, dni, lastPaymentDate, nextDueDate, anniversaryDate, ...rest } = createClientDto;
 
     // 1. Validar DNI único
     const existing = await this.prisma.client.findUnique({
@@ -77,6 +77,7 @@ export class ClientsService {
     // 3. Formatear fechas y calcular estado
     const parsedLastPayment = lastPaymentDate ? new Date(lastPaymentDate) : null;
     const parsedNextDue = nextDueDate ? new Date(nextDueDate) : null;
+    const parsedAnniversary = anniversaryDate ? new Date(anniversaryDate) : null;
     const status = this.computeStatus(parsedNextDue);
     const parsedAmount = rest.amount ? parseFloat(rest.amount.toString()) : 0.0;
 
@@ -89,6 +90,7 @@ export class ClientsService {
         sectorId: sectorId || null,
         lastPaymentDate: parsedLastPayment,
         nextDueDate: parsedNextDue,
+        anniversaryDate: parsedAnniversary,
         status,
       },
     });
@@ -228,7 +230,7 @@ export class ClientsService {
       throw new NotFoundException('El cliente solicitado no existe.');
     }
 
-    const { sectorId, dni, lastPaymentDate, nextDueDate, ...rest } = updateClientDto;
+    const { sectorId, dni, lastPaymentDate, nextDueDate, anniversaryDate, ...rest } = updateClientDto;
 
     // 1. Validar DNI único
     if (dni && dni !== existingClient.dni) {
@@ -270,6 +272,7 @@ export class ClientsService {
     if (dni) dataToUpdate.dni = dni;
     if (sectorId !== undefined) dataToUpdate.sectorId = sectorId || null;
     if (lastPaymentDate !== undefined) dataToUpdate.lastPaymentDate = lastPaymentDate ? new Date(lastPaymentDate) : null;
+    if (anniversaryDate !== undefined) dataToUpdate.anniversaryDate = anniversaryDate ? new Date(anniversaryDate) : null;
     if (nextDueDate !== undefined) {
       const parsedNextDue = nextDueDate ? new Date(nextDueDate) : null;
       dataToUpdate.nextDueDate = parsedNextDue;
